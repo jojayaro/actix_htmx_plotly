@@ -1,11 +1,13 @@
 use actix_web::{get, web, App, HttpServer, Responder, HttpRequest, HttpResponse, Result, http::StatusCode};
+use serde::de::IntoDeserializer;
 use serde::{Serialize, Deserialize};
 use reqwest::Client;
 use serde_json::Value;
 use chrono::{DateTime, Utc, TimeZone, NaiveDateTime};
-use plotly;
+use plotly::{self, Layout};
 use plotly::common::Mode;
-
+use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
+use actix_files::{Files, NamedFile};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Magnetic {
@@ -106,40 +108,122 @@ async fn line_plot_div() -> String {
     let trace2 = plotly::Scatter::new(x.clone(), z)
             .name("Bt")
             .mode(Mode::Lines);
+
+    let layout = Layout::new()
+        .paper_background_color(plotly::color::NamedColor::Black)
+        .plot_background_color(plotly::color::NamedColor::Black);
+
     let mut plot: plotly::Plot = plotly::Plot::new();
     plot.add_trace(trace);
     plot.add_trace(trace2);
+    plot.set_layout(layout);
+
     plot.to_inline_html(Some("div"))
 }
 
+// #[get("/")]
+// async fn index() -> impl Responder {
+
+//     line_plot().await;
+//     let mut builder = HttpResponse::Ok();
+//     builder.content_type("text/html; charset=utf-8");
+//     builder.body(include_str!("out.html"))
+
+
+// }
+
 #[get("/")]
 async fn index() -> impl Responder {
-
-    line_plot().await;
-    let mut builder = HttpResponse::Ok();
-    builder.content_type("text/html; charset=utf-8");
-    builder.body(include_str!("out.html"))
-
-
-}
-
-#[get("/multiple")]
-async fn multiple_plots_using_divs() -> impl Responder {
-
-    let start: String = "<html>
+ 
+    let start: String = "
+        <!doctype html>
+        <html lang=\"en\">
         <head>
+            <meta charset=\"utf-8\">
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+            <title>Aurora Monitor</title>
+            <link href=\"../static/bootstrap.css\" rel=\"stylesheet\">
+            <script>
+            function autoRefresh() {
+                window.location = window.location.href;
+            }
+            setInterval('autoRefresh()', 60000);
+            </script>
         </head>
         <body>
+        <div class=\"navbar navbar-expand-lg fixed-top navbar-dark bg-dark\">
+        <div class=\"container\">
+          <a href=\"../\" class=\"navbar-brand\">Jesus Jayaro</a>
+            </ul>
+            <ul class=\"navbar-nav ms-md-auto\">
+              <li class=\"nav-item\">
+                <a target=\"_blank\" rel=\"noopener\" class=\"nav-link\" href=\"../multiple\"><i class=\"bi bi-twitter\"></i> Aurora Monitor</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js\"></script>
         <div>
             <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js\"></script>
-            <script src=\"https://cdn.plot.ly/plotly-2.12.1.min.js\"></script>".to_string();
+            <script src=\"https://cdn.plot.ly/plotly-2.12.1.min.js\"></script>
+            ".to_string();
+    
     let plot = line_plot_div().await;
+    
     let end: String = "</div>
                     </body>
                 </html>".to_string();
     let html = start + &plot + &end;
 
-    println!("{:?}", html);
+    let mut builder = HttpResponse::Ok();
+    builder.content_type("text/html; charset=utf-8");
+    builder.body(html)
+
+}
+
+#[get("/multiple")]
+async fn multiple_plots_using_divs() -> impl Responder {
+ 
+    let start: String = "<!doctype html>
+        <html lang=\"en\">
+        <head>
+            <meta charset=\"utf-8\">
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+            <title>Aurora Monitor</title>
+            <link href=\"../static/bootstrap.css\" rel=\"stylesheet\">
+            <script>
+            function autoRefresh() {
+                window.location = window.location.href;
+            }
+            setInterval('autoRefresh()', 60000);
+            </script>
+        </head>
+        <body>
+        <div class=\"navbar navbar-expand-lg fixed-top navbar-dark bg-dark\">
+        <div class=\"container\">
+          <a href=\"../\" class=\"navbar-brand\">Jesus Jayaro</a>
+            </ul>
+            <ul class=\"navbar-nav ms-md-auto\">
+              <li class=\"nav-item\">
+                <a target=\"_blank\" rel=\"noopener\" class=\"nav-link\" href=\"../multiple\"><i class=\"bi bi-twitter\"></i> Aurora Monitor</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js\"></script>
+        <div>
+            <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js\"></script>
+            <script src=\"https://cdn.plot.ly/plotly-2.12.1.min.js\"></script>
+            ".to_string();
+    
+    let plot = line_plot_div().await;
+    
+    let end: String = "</div>
+                    </body>
+                </html>".to_string();
+    let html = start + &plot + &end;
 
     let mut builder = HttpResponse::Ok();
     builder.content_type("text/html; charset=utf-8");
@@ -149,8 +233,19 @@ async fn multiple_plots_using_divs() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| App::new().service(index).service(multiple_plots_using_divs))
-        .bind(("127.0.0.1", 8080))?
+
+    let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+    builder
+        .set_private_key_file("key.pem", SslFiletype::PEM)
+        .unwrap();
+    builder.set_certificate_chain_file("cert.pem").unwrap();
+
+    HttpServer::new(|| App::new()
+        .service(index)
+        .service(multiple_plots_using_divs)
+        .service(Files::new("/static", "./static")
+    ))
+        .bind_openssl("0.0.0.0:8080", builder)?
         .run()
         .await
 
