@@ -69,7 +69,8 @@ async fn get_magnetic_data() -> std::result::Result<Vec<Magnetic>, Box<dyn std::
     Ok(magnetic_data)
 }
 
-async fn line_plot() {
+#[get("/plot")]
+async fn line_plot() -> String {
     let magnetic_data = get_magnetic_data().await.unwrap();
     let mut x = Vec::new();
     let mut y = Vec::new();
@@ -89,7 +90,8 @@ async fn line_plot() {
     plot.add_trace(trace);
     plot.add_trace(trace2);
     
-    plot.write_html("src/out.html");
+    //plot.write_html("src/out.html");
+    plot.to_inline_html(Some("div2"))
 }
 
 async fn line_plot_div() -> String {
@@ -112,7 +114,10 @@ async fn line_plot_div() -> String {
 
     let layout = Layout::new()
         .paper_background_color(plotly::color::NamedColor::Black)
-        .plot_background_color(plotly::color::NamedColor::Black);
+        .plot_background_color(plotly::color::NamedColor::Black)
+        .y_axis(plotly::layout::Axis::new().range(vec![-40, 40]))
+        .title("Magnetic Field".into())
+        .show_legend(false);
 
     let mut plot: plotly::Plot = plotly::Plot::new();
     plot.add_trace(trace);
@@ -144,6 +149,7 @@ async fn index() -> impl Responder {
             <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
             <title>Aurora Monitor</title>
             <link href=\"../static/bootstrap.css\" rel=\"stylesheet\">
+            <script src=\"https://unpkg.com/htmx.org@1.9.2\" integrity=\"sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h\" crossorigin=\"anonymous\"></script>
             <script>
             function autoRefresh() {
                 window.location = window.location.href;
@@ -182,6 +188,11 @@ async fn index() -> impl Responder {
     builder.body(html)
 
 }
+
+                    // <div id=\"div2\" hx-get=\"/plot\" hx-trigger=\"every 5s\">
+                    // <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js\"></script>
+                    // <script src=\"https://cdn.plot.ly/plotly-2.12.1.min.js\"></script>
+                    // </div>
 
 #[get("/multiple")]
 async fn multiple_plots_using_divs() -> impl Responder {
@@ -244,6 +255,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| App::new()
         .service(index)
         .service(multiple_plots_using_divs)
+        .service(line_plot)
         .service(Files::new("/static", "./static")
     ))
         .bind_openssl("0.0.0.0:8080", builder)?
