@@ -86,9 +86,18 @@ async fn line_plot() -> String {
     let trace2 = plotly::Scatter::new(x.clone(), z)
             .name("Bt")
             .mode(Mode::Lines);
+
+    let layout = Layout::new()
+        .paper_background_color(plotly::color::NamedColor::Black)
+        .plot_background_color(plotly::color::NamedColor::Black)
+        .y_axis(plotly::layout::Axis::new().range(vec![-40, 40]))
+        .title("Magnetic Field".into())
+        .show_legend(false);
+
     let mut plot: plotly::Plot = plotly::Plot::new();
     plot.add_trace(trace);
     plot.add_trace(trace2);
+    plot.set_layout(layout);
     
     //plot.write_html("src/out.html");
     plot.to_inline_html(Some("div2"))
@@ -150,12 +159,7 @@ async fn index() -> impl Responder {
             <title>Aurora Monitor</title>
             <link href=\"../static/bootstrap.css\" rel=\"stylesheet\">
             <script src=\"https://unpkg.com/htmx.org@1.9.2\" integrity=\"sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h\" crossorigin=\"anonymous\"></script>
-            <script>
-            function autoRefresh() {
-                window.location = window.location.href;
-            }
-            setInterval('autoRefresh()', 60000);
-            </script>
+
         </head>
         <body>
         <div class=\"navbar navbar-expand-lg fixed-top navbar-dark bg-dark\">
@@ -171,7 +175,7 @@ async fn index() -> impl Responder {
         </div>
       </div>
       <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js\"></script>
-        <div>
+      <div id=\"div2\" hx-get=\"/plot\" hx-trigger=\"every 60s\">
             <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js\"></script>
             <script src=\"https://cdn.plot.ly/plotly-2.12.1.min.js\"></script>
             ".to_string();
@@ -188,6 +192,13 @@ async fn index() -> impl Responder {
     builder.body(html)
 
 }
+
+// <script>
+// function autoRefresh() {
+//     window.location = window.location.href;
+// }
+// setInterval('autoRefresh()', 60000);
+// </script>
 
                     // <div id=\"div2\" hx-get=\"/plot\" hx-trigger=\"every 5s\">
                     // <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js\"></script>
