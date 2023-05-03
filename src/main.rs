@@ -162,34 +162,39 @@ async fn index() -> impl Responder {
 
         </head>
         <body>
-        <div class=\"navbar navbar-expand-lg fixed-top navbar-dark bg-dark\">
-        <div class=\"container\">
-          <a href=\"../\" class=\"navbar-brand\">Jesus Jayaro</a>
-            </ul>
-            <ul class=\"navbar-nav ms-md-auto\">
-              <li class=\"nav-item\">
-                <a target=\"_blank\" rel=\"noopener\" class=\"nav-link\" href=\"../multiple\"><i class=\"bi bi-twitter\"></i> Aurora Monitor</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js\"></script>
-      <div id=\"div2\" hx-get=\"/plot\" hx-trigger=\"every 60s\">
-            <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js\"></script>
-            <script src=\"https://cdn.plot.ly/plotly-2.12.1.min.js\"></script>
-            ".to_string();
+            <div class=\"navbar navbar-expand-lg fixed-top navbar-dark bg-dark\">
+                <div class=\"container\">
+                    <a href=\"../\" class=\"navbar-brand\">Jesus Jayaro</a>
+                        </ul>
+                        <ul class=\"navbar-nav ms-md-auto\">
+                        <li class=\"nav-item\">
+                            <a target=\"_blank\" rel=\"noopener\" class=\"nav-link\" href=\"../multiple\"><i class=\"bi bi-twitter\"></i> Aurora Monitor</a>
+                        </li>
+                        </ul>
+                </div>
+            </div>
+            <div>
+                <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js\"></script>
+                    <div id=\"div2\" hx-get=\"/plot\" hx-trigger=\"every 60s\">
+                        <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js\"></script>
+                        <script src=\"https://cdn.plot.ly/plotly-2.12.1.min.js\"></script>
+                        <div hx-get=\"/plot\" hx-trigger=\"load\">
+                        </div>
+                    </div>
+            </div>
+        </body>
+        </html>".to_string();
     
-    let plot = line_plot_div().await;
+    // let plot = line_plot_div().await;
     
-    let end: String = "</div>
-                    </body>
-                </html>".to_string();
-    let html = start + &plot + &end;
+    // let end: String = "</div>
+    //                 </body>
+    //             </html>".to_string();
+    // let html = start + &plot + &end;
 
     let mut builder = HttpResponse::Ok();
     builder.content_type("text/html; charset=utf-8");
-    builder.body(html)
+    builder.body(start)
 
 }
 
