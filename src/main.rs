@@ -11,7 +11,7 @@ use actix_files::{Files, NamedFile};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Magnetic {
-    time_tag: i64,
+    time_tag: DateTime<Utc>,
     bx: f64,
     by: f64,
     bz: f64,
@@ -23,7 +23,7 @@ struct Magnetic {
 impl Magnetic {
     fn new() -> Magnetic {
         Magnetic {
-            time_tag: 0,
+            time_tag: Utc::now(),
             bx: 0.0,
             by: 0.0,
             bz: 0.0,
@@ -34,7 +34,8 @@ impl Magnetic {
     }
     fn from_json(json: Value) -> Magnetic {
         let mut mag = Magnetic::new();
-        mag.time_tag = NaiveDateTime::parse_from_str(&json[0].to_string().replace("\"",""), "%Y-%m-%d %H:%M:%S%.3f").unwrap().timestamp();
+        mag.time_tag = Utc.datetime_from_str(&json[0].to_string().replace("\"",""), "%Y-%m-%d %H:%M:%S%.3f").unwrap();
+        //mag.time_tag = NaiveDateTime::parse_from_str(&json[0].to_string().replace("\"",""), "%Y-%m-%d %H:%M:%S%.3f").unwrap().timestamp();
         mag.bx = json[1].to_string().replace("\"","").parse::<f64>().unwrap();
         mag.by = json[2].to_string().replace("\"","").parse::<f64>().unwrap();
         mag.bz = json[3].to_string().replace("\"","").parse::<f64>().unwrap();
