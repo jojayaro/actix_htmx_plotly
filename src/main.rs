@@ -45,6 +45,37 @@ impl Magnetic {
     }
 }
 
+struct Plasma {
+    time_tag: DateTime<Utc>,
+    density: f32,
+    speed: f32,
+    temperature: f32
+}
+
+impl Plasma{
+    fn new() -> Plasma {
+        Plasma {
+            time_tag: Utc::now(),
+            density: 0.0,
+            speed: 0.0,
+            temperature: 0.0
+        }
+    }
+    fn from_json(json: Value) -> Plasma {
+        let mut plasma = Plasma::new();
+        plasma.time_tag = Utc.datetime_from_str(&json[0].to_string().replace("\"",""), "%Y-%m-%d %H:%M:%S%.3f").unwrap();
+        plasma.density = json[1].to_string().replace("\"","").parse::<f32>().unwrap();
+        plasma.speed = json[2].to_string().replace("\"","").parse::<f32>().unwrap();
+        plasma.temperature = json[3].to_string().replace("\"","").parse::<f32>().unwrap();
+        plasma
+    }
+}
+
+fn response_to_plasma(response: Value) -> Vec<Plasma> {
+    let array: Vec<Value> = response.as_array().unwrap().clone();
+    array[1..].iter().map(|x| Plasma::from_json(x.clone())).collect()
+}
+
 fn response_to_magnetic(response: Value) -> Vec<Magnetic> {
     let array: Vec<Value> = response.as_array().unwrap().clone();
     array[1..].iter().map(|x| Magnetic::from_json(x.clone())).collect()
@@ -66,6 +97,13 @@ async fn get_magnetic_data() -> std::result::Result<Vec<Magnetic>, Box<dyn std::
     let response = url_to_json(url).await?;
     let magnetic_data = response_to_magnetic(response);
     Ok(magnetic_data)
+}
+
+async fn get_plasma_data() -> std::result::Result<Vec<Plasma>, Box<dyn std::error::Error>> {
+    let url = "https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json";
+    let response = url_to_json(url).await?;
+    let plasma_data = response_to_plasma(response);
+    Ok(plasma_data)
 }
 
 #[get("/plot")]
