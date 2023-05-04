@@ -117,23 +117,69 @@ async fn line_plot() -> String {
         y.push(mag.bz);
         z.push(mag.bt);
     }
+
+    let plasma_data = get_plasma_data().await.unwrap();
+    let mut x2 = Vec::new();
+    let mut y2 = Vec::new();
+    let mut y3 = Vec::new();
+    let mut y4 = Vec::new();
+    for plasma in plasma_data {
+        x2.push(plasma.time_tag);
+        y2.push(plasma.density);
+        y3.push(plasma.speed);
+        y4.push(plasma.temperature);
+    }
+
+
     let trace = plotly::Scatter::new(x.clone(), y)
             .name("Bz")
             .mode(Mode::Lines);
     let trace2 = plotly::Scatter::new(x.clone(), z)
             .name("Bt")
             .mode(Mode::Lines);
+    let trace3 = plotly::Scatter::new(x2.clone(), y2)
+            .name("Density")
+            .mode(Mode::Lines)
+            .x_axis("x2")
+            .y_axis("y2");
+    let trace4 = plotly::Scatter::new(x2.clone(), y3)
+            .name("Speed")
+            .mode(Mode::Lines)
+            .x_axis("x3")
+            .y_axis("y3");
+    let trace5 = plotly::Scatter::new(x2.clone(), y4)
+            .name("Temperature")
+            .mode(Mode::Lines)
+            .x_axis("x4")
+            .y_axis("y4");
 
     let layout = Layout::new()
+        .x_axis(plotly::layout::Axis::new().visible(false))
+        .y_axis(plotly::layout::Axis::new().range(vec![-40, 40]))
+        .x_axis2(plotly::layout::Axis::new().visible(false))
+        //.y_axis2(plotly::layout::Axis::new().range(vec![0, 50]))
+        .x_axis3(plotly::layout::Axis::new().visible(false))
+        //.y_axis3(plotly::layout::Axis::new().range(vec![0, 1000]))
+        //.x_axis4(plotly::layout::Axis::new().visible(false))
+        //.y_axis4(plotly::layout::Axis::new().range(vec![0, 10000000]))
         .paper_background_color(plotly::color::NamedColor::Black)
         .plot_background_color(plotly::color::NamedColor::Black)
-        .y_axis(plotly::layout::Axis::new().range(vec![-40, 40]))
         .title("Magnetic Field".into())
-        .show_legend(false);
+        .show_legend(false)
+        .height(800)
+        .grid(
+            plotly::layout::LayoutGrid::new()
+                .rows(4)
+                .columns(1)
+                .pattern(plotly::layout::GridPattern::Independent),
+        );
 
     let mut plot: plotly::Plot = plotly::Plot::new();
     plot.add_trace(trace);
     plot.add_trace(trace2);
+    plot.add_trace(trace3);
+    plot.add_trace(trace4);
+    plot.add_trace(trace5);
     plot.set_layout(layout);
     
     //plot.write_html("src/out.html");
