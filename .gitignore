@@ -1,3 +1,4 @@
 /target
 key.pem
 cert.pem
+/static/test.html

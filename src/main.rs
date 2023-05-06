@@ -164,7 +164,7 @@ async fn line_plot() -> String {
         //.y_axis4(plotly::layout::Axis::new().range(vec![0, 10000000]))
         .paper_background_color(plotly::color::NamedColor::Black)
         .plot_background_color(plotly::color::NamedColor::Black)
-        .title("Magnetic Field".into())
+        //.title("Magnetic Field".into())
         .show_legend(false)
         .height(800)
         .grid(
@@ -173,6 +173,8 @@ async fn line_plot() -> String {
                 .columns(1)
                 .pattern(plotly::layout::GridPattern::Independent),
         );
+    let config = plotly::configuration::Configuration::new()
+        .display_mode_bar(plotly::configuration::DisplayModeBar::False);
 
     let mut plot: plotly::Plot = plotly::Plot::new();
     plot.add_trace(trace);
@@ -181,6 +183,7 @@ async fn line_plot() -> String {
     plot.add_trace(trace4);
     plot.add_trace(trace5);
     plot.set_layout(layout);
+    plot.set_configuration(config);
     
     //plot.write_html("src/out.html");
     plot.to_inline_html(Some("div2"))
@@ -191,7 +194,16 @@ async fn index() -> impl Responder {
 
     let mut builder = HttpResponse::Ok();
     builder.content_type("text/html; charset=utf-8");
-    builder.body(include_str!("plot.html"))
+    builder.body(include_str!("../static/index.html"))
+
+}
+
+#[get("/aurora")]
+async fn aurora_page() -> impl Responder {
+
+    let mut builder = HttpResponse::Ok();
+    builder.content_type("text/html; charset=utf-8");
+    builder.body(include_str!("../static/plot.html"))
 
 }
 
@@ -207,6 +219,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| App::new()
         .service(index)
         .service(line_plot)
+        .service(aurora_page)
         .service(Files::new("/static", "./static")
     ))
         .bind_openssl("0.0.0.0:8080", builder)?
