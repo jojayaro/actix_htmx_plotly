@@ -7,6 +7,7 @@ use plotly::{self, Layout};
 use plotly::common::Mode;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use actix_files::{Files};
+use rayon::prelude::*;
 
 // #[derive(Debug, Serialize, Deserialize)]
 // struct Magnetic {
@@ -73,12 +74,12 @@ use actix_files::{Files};
 
 // fn response_to_plasma(response: Value) -> Vec<Plasma> {
 //     let array: Vec<Value> = response.as_array().unwrap().clone();
-//     array[1..].iter().map(|x| Plasma::from_json(x.clone())).collect()
+//     array[1..].par_iter().map(|x| Plasma::from_json(x.clone())).collect()
 // }
 
 // fn response_to_magnetic(response: Value) -> Vec<Magnetic> {
 //     let array: Vec<Value> = response.as_array().unwrap().clone();
-//     array[1..].iter().map(|x| Magnetic::from_json(x.clone())).collect()
+//     array[1..].par_iter().map(|x| Magnetic::from_json(x.clone())).collect()
 // }
 
 // async fn url_to_json(url: &str) -> std::result::Result<Value, Box<dyn std::error::Error>> {
@@ -142,38 +143,38 @@ async fn line_plot() -> String {
         .unwrap()
         .as_array()
         .unwrap()
-        .iter()
+        .par_iter()
         .skip(1)
         .map(|x| x.clone())
         .collect::<Vec<Value>>();
 
     let time_tag = response
-        .iter()
+        .par_iter()
         .map(|x| x[0].to_string().replace("\"",""))
         .collect::<Vec<String>>();
 
     let speed = response
-        .iter()
+        .par_iter()
         .map(|x| x[1].to_string().replace("\"","").parse::<f64>().unwrap())
         .collect::<Vec<f64>>();
 
     let density = response
-        .iter()
+        .par_iter()
         .map(|x| x[2].to_string().replace("\"","").parse::<f64>().unwrap())
         .collect::<Vec<f64>>();
 
     let temperature = response
-        .iter()
+        .par_iter()
         .map(|x| x[3].to_string().replace("\"","").parse::<f64>().unwrap())
         .collect::<Vec<f64>>();
 
     let bt = response
-        .iter()
+        .par_iter()
         .map(|x| x[7].to_string().replace("\"","").parse::<f64>().unwrap())
         .collect::<Vec<f64>>();
 
     let bz = response
-        .iter()
+        .par_iter()
         .map(|x| x[6].to_string().replace("\"","").parse::<f64>().unwrap())
         .collect::<Vec<f64>>();
 
@@ -271,34 +272,34 @@ async fn line_plot() -> String {
 //     let data: Vec<Data> = serde_json::from_str(&response).unwrap();
 //     let data2: Vec<Data2> = serde_json::from_str(&response2).unwrap();
 
-//     let time_tags: Vec<DateTime<Utc>> = data.iter().skip(1)
+//     let time_tags: Vec<DateTime<Utc>> = data.par_iter().skip(1)
 //         .map(|d| Utc.datetime_from_str(&d.time_tag.to_string().replace("\"",""), "%Y-%m-%d %H:%M:%S%.3f").unwrap())
 //         .collect();
 
-//     let bz_gsms: Vec<f64> = data.iter().skip(1)
+//     let bz_gsms: Vec<f64> = data.par_iter().skip(1)
 //         .map(|d| d.bz_gsm.to_string().replace("\"","").parse::<f64>().unwrap())
 //         .collect();
 
-//     let bt_gsms: Vec<f64> = data.iter().skip(1)
+//     let bt_gsms: Vec<f64> = data.par_iter().skip(1)
 //         .map(|d| d.bt.to_string().replace("\"","").parse::<f64>().unwrap())
 //         .collect();
 
-//     let time_tags2: Vec<DateTime<Utc>> = data2.iter()
+//     let time_tags2: Vec<DateTime<Utc>> = data2.par_iter()
 //         .skip(1) // Skip the first item (labels of the fields)
 //         .map(|d| Utc.datetime_from_str(&d.time_tag.to_string().replace("\"",""), "%Y-%m-%d %H:%M:%S%.3f").unwrap())
 //         .collect();
 
-//     let densities: Vec<f64> = data2.iter()
+//     let densities: Vec<f64> = data2.par_iter()
 //         .skip(1) // Skip the first item (labels of the fields)
 //         .map(|d| d.density.to_string().replace("\"","").parse::<f64>().unwrap())
 //         .collect();
 
-//     let speeds: Vec<f64> = data2.iter()
+//     let speeds: Vec<f64> = data2.par_iter()
 //         .skip(1) // Skip the first item (labels of the fields)
 //         .map(|d| d.speed.to_string().replace("\"","").parse::<f64>().unwrap())
 //         .collect();
 
-//     let temperatures: Vec<f64> = data2.iter()
+//     let temperatures: Vec<f64> = data2.par_iter()
 //         .skip(1) // Skip the first item (labels of the fields)
 //         .map(|d| d.temperature.to_string().replace("\"","").parse::<f64>().unwrap())
 //         .collect();

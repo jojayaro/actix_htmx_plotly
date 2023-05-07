@@ -15,6 +15,7 @@ plotly = { version = "0.8.3", features = ["wasm"] }
 maud = { version = "0.25.0", features = ["actix-web"] }
 openssl = "0.10.52"
 actix-files = "0.6.2"
+rayon = "1.7.0"
 
 
 
