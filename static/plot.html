@@ -37,12 +37,8 @@
     </div>
   </div>
   <div class="container">
-    <div id="div2" hx-get="/plot" hx-trigger="load, every 60s">
+    <div id="div2" hx-get="/plot" hx-trigger="load, every 60s" hx-boost="true">
     </div>
-  </div>
-  <div class="container" hx-get="https://cdn.star.nesdis.noaa.gov/GOES16/GLM/SECTOR/can/EXTENT3/2250x1125.jpg" 
-    hx-trigger="load, every 300s" hx-target="#goes16" hx-swap="innerHTML">
-    <img id="goes16" src="https://cdn.star.nesdis.noaa.gov/GOES16/GLM/SECTOR/can/EXTENT3/2250x1125.jpg" width="100%" alt="GOES16 Geocolor">
   </div>
 </body>
 </html>
