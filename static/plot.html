@@ -37,8 +37,9 @@
     </div>
   </div>
   <div class="container">
-    <div id="div2" hx-get="/plot" hx-trigger="load, every 60s" hx-boost="true">
-    </div>
+    <div hx-get="/plot" hx-trigger="load"></div>
+    <div hx-get="/plot_update" hx-trigger="every 60s"></div>
   </div>
 </body>
 </html>
+

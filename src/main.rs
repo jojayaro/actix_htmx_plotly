@@ -126,13 +126,7 @@ use rayon::prelude::*;
 //     temperature: String,
 // }
 
-#[get("/goes16")] 
-async fn goes16() -> String {
-    "<img id=\"goes16\" src=\"https://cdn.star.nesdis.noaa.gov/GOES16/GLM/SECTOR/can/EXTENT3/2250x1125.jpg\" width=\"100%\" alt=\"GOES16 Geocolor\">".to_string()
-}
-
-#[get("/plot")]
-async fn line_plot() -> String {
+async fn plot_data() -> (Vec<String>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>) {
     let solarwind_url = "https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json";
 
     let response = reqwest::get(solarwind_url)
@@ -178,11 +172,68 @@ async fn line_plot() -> String {
         .map(|x| x[6].to_string().replace("\"","").parse::<f64>().unwrap())
         .collect::<Vec<f64>>();
 
+    (time_tag, bt, bz, density, speed, temperature)
+}
+
+#[get("/goes16")] 
+async fn goes16() -> String {
+    "<img id=\"goes16\" src=\"https://cdn.star.nesdis.noaa.gov/GOES16/GLM/SECTOR/can/EXTENT3/2250x1125.jpg\" width=\"100%\" alt=\"GOES16 Geocolor\">".to_string()
+}
+
+#[get("/plot")]
+async fn line_plot() -> String {
+    // let solarwind_url = "https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json";
+
+    // let response = reqwest::get(solarwind_url)
+    //     .await
+    //     .unwrap()
+    //     .json::<Value>()
+    //     .await
+    //     .unwrap()
+    //     .as_array()
+    //     .unwrap()
+    //     .par_iter()
+    //     .skip(1)
+    //     .map(|x| x.clone())
+    //     .collect::<Vec<Value>>();
+
+    // let time_tag = response
+    //     .par_iter()
+    //     .map(|x| x[0].to_string().replace("\"",""))
+    //     .collect::<Vec<String>>();
+
+    // let speed = response
+    //     .par_iter()
+    //     .map(|x| x[1].to_string().replace("\"","").parse::<f64>().unwrap())
+    //     .collect::<Vec<f64>>();
+
+    // let density = response
+    //     .par_iter()
+    //     .map(|x| x[2].to_string().replace("\"","").parse::<f64>().unwrap())
+    //     .collect::<Vec<f64>>();
+
+    // let temperature = response
+    //     .par_iter()
+    //     .map(|x| x[3].to_string().replace("\"","").parse::<f64>().unwrap())
+    //     .collect::<Vec<f64>>();
+
+    // let bt = response
+    //     .par_iter()
+    //     .map(|x| x[7].to_string().replace("\"","").parse::<f64>().unwrap())
+    //     .collect::<Vec<f64>>();
+
+    // let bz = response
+    //     .par_iter()
+    //     .map(|x| x[6].to_string().replace("\"","").parse::<f64>().unwrap())
+    //     .collect::<Vec<f64>>();
+
+    let (time_tag, bt, bz, density, speed, temperature) = plot_data().await;
+
     let plot_div: String = format!(
         "<div id=\"div2\" class=\"plotly-graph-div\" style=\"height:100%; width:100%;\"></div>
         <script type=\"text/javascript\">
             Plotly.newPlot(\"div2\", {{
-        \"data\": [
+            \"data\": [
             {{
             \"type\": \"scatter\",
             \"name\": \"Bz\",
@@ -258,6 +309,22 @@ async fn line_plot() -> String {
         </script>");
 
     plot_div
+}
+
+#[get("/plot_update")]
+async fn line_plot_update() -> String {
+
+    let (time_tag, bt, bz, density, speed, temperature) = plot_data().await;
+
+    format!("
+    <script type=\"text/javascript\">
+    var data = {{
+        x: [{time_tag:?}, {time_tag:?}, {time_tag:?}, {time_tag:?}],
+        y: [{bz:?}, {bt:?}, {density:?}, {speed:?}, {temperature:?}]
+        }};
+    Plotly.update(\"div2\", data);
+    </script>
+    ")
 }
 
 // #[get("/plot")]
@@ -417,6 +484,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| App::new()
         .service(index)
         .service(line_plot)
+        .service(line_plot_update)
         .service(aurora_page)
         .service(goes16)
         .service(Files::new("/static", "./static")

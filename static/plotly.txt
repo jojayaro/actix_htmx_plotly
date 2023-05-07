@@ -1,0 +1,40 @@
+    <script>
+    Plotly.update('div2', {{\"data\":[
+            {{
+            \"x\": {time_tag:?},
+            \"y\": {bz:?}
+            }},
+            {{
+            \"x\": {time_tag:?},
+            \"y\": {bt:?}
+            }},
+            {{
+            \"x\": {time_tag:?},
+            \"y\": {density:?},
+            \"xaxis\": \"x2\",
+            \"yaxis\": \"y2\"
+            }},
+            {{
+            \"x\": {time_tag:?},
+            \"y\": {speed:?},
+            \"xaxis\": \"x3\",
+            \"yaxis\": \"y3\"
+            }},
+            {{
+            \"x\": {time_tag:?},
+            \"y\": {temperature:?},
+            \"xaxis\": \"x4\",
+            \"yaxis\": \"y4\"
+            }}
+            ]}})
+    </script>
+
+    <script>
+    var data = {{
+            x: [{time_tag:?}, {time_tag:?}, {time_tag:?}, {time_tag:?}]
+            y: [{bz:?}, {bt:?}, {density:?}, {speed:?}, {temperature:?}]
+            }}
+
+    Plotly.update('div2', data)
+
+    </script>
