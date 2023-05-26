@@ -1,0 +1,3 @@
+hx-get="/plot_update_hx/24" hx-swap="outerHTML" hx-target="#plot-updates" hx-trigger="click"
+
+hx-get="/plot_update/2" hx-trigger="every 60s"

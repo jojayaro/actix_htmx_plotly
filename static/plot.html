@@ -37,9 +37,67 @@
     </div>
   </div>
   <div class="container">
-    <div hx-get="/plot" hx-trigger="load"></div>
-    <div hx-get="/plot_update" hx-trigger="every 60s"></div>
+    <div id="plot" hx-get="/plot" hx-trigger="load"></div>
+    <div id="plot-updates" hx-get="/plot_update/2" hx-trigger="every 60s"></div>
   </div>
+  <div class="container">
+    <div class="row">
+      <div class="col text-center">
+      <button class="btn btn-secondary" hx-trigger="click" hx-get="/plot_update_hx/2" hx-swap="outerHTML" hx-target="#plot-updates">2h</button>
+      </div>
+      <div class="col text-center">
+      <button class="btn btn-secondary" hx-trigger="click" hx-get="/plot_update_hx/24" hx-swap="outerHTML" hx-target="#plot-updates">24h</button>
+      </div>
+      <div class="col text-center">
+      <button class="btn btn-secondary" hx-trigger="click" hx-get="/plot_update_hx/168" hx-swap="outerHTML" hx-target="#plot-updates">7d</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- <div id="graph"></div>
+
+  <script text="text/javascript">
+// Generate sample data
+const data = [
+  { x: [1, 2, 3], y: [4, 2, 5], type: 'scatter', mode: 'markers' }
+];
+
+// Set up the layout for the graph
+const layout = {
+  clickmode: 'event+select'
+};
+
+// Create the graph
+const graphElement = document.getElementById('graph');
+Plotly.newPlot(graphElement, data, layout);
+
+// Function to handle click events
+function handleClick(eventData) {
+  const pointData = eventData.points[0].data;
+  
+  // Send the clicked data point to the server via a POST request using htmx
+  htmx.ajax({
+    url: '/capture-data',
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ data: pointData }),
+    responseType: 'text',
+    onLoad: function (xhr, elt) {
+      console.log(xhr.response); // Print the response from the server
+    },
+    onError: function (error) {
+      console.error('Error:', error);
+    }
+  });
+}
+
+// Add event listener for click events on data points
+graphElement.on('plotly_click', handleClick); -->
+
+
+  </script>
 </body>
 </html>
 

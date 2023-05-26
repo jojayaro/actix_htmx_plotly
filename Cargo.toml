@@ -11,11 +11,13 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
 reqwest = { version = "0.11", features = ["json"] }
 chrono = { version = "0.4.24", features = ["serde", "rustc-serialize"]}
-plotly = { version = "0.8.3", features = ["wasm"] }
-maud = { version = "0.25.0", features = ["actix-web"] }
+# plotly = { version = "0.8.3", features = ["wasm"] }
+# maud = { version = "0.25.0", features = ["actix-web"] }
 openssl = "0.10.52"
 actix-files = "0.6.2"
 rayon = "1.7.0"
+deltalake = { version = "0.9.0", features = ["azure", "datafusion"] }
+
 
 
 
