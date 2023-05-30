@@ -294,7 +294,7 @@ async fn line_plot_update_hx(hours: web::Path<i64>) -> String {
     let time_range = *hours;
 
     format!("
-    <div id=\"plot-updates\" hx-get=\"/plot_update/{time_range}\" hx-trigger=\"load every 60s\"></div>
+    <div id=\"plot-updates\" hx-get=\"/plot_update/{time_range}\" hx-trigger=\"load, every 60s\"></div>
     ")
 }
 
