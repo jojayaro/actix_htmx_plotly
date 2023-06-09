@@ -1700,7 +1700,6 @@ dependencies = [
  "rayon",
  "reqwest",
  "serde",
- "serde_json",
 ]
 
 [[package]]
