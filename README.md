@@ -54,7 +54,6 @@ This project is open source and available under the [MIT License](LICENSE).
 - Data provided by [NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/)
 - Plotly.js for interactive visualizations
 - Bootstrap for responsive design
-
----
-
-Feel free to customize this README further based on any additional information you'd like to include or emphasize!
+- HTMX for seamless updates
+- Delta-rs for data storage
+- Datafusion for data processing
