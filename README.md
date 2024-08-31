@@ -1,5 +1,3 @@
-Certainly! Here's a compelling README for your repository:
-
 # Aurora Monitor
 
 Aurora Monitor is a real-time solar wind data visualization tool built with Rust and Actix-web. It provides an interactive web interface for monitoring space weather conditions that can lead to aurora events.
