@@ -244,11 +244,11 @@ async fn capture_data(data: web::Json<Data>) -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
-    let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
-    builder
-        .set_private_key_file("key.pem", SslFiletype::PEM)
-        .unwrap();
-    builder.set_certificate_chain_file("cert.pem").unwrap();
+    // let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+    // builder
+    //     .set_private_key_file("key.pem", SslFiletype::PEM)
+    //     .unwrap();
+    // builder.set_certificate_chain_file("cert.pem").unwrap();
 
     HttpServer::new(|| App::new()
         .service(index)
@@ -263,7 +263,8 @@ async fn main() -> std::io::Result<()> {
         .service(delta_data_handler)
         // .route("/data", web::post().to(capture_data))
     )
-        .bind_openssl("0.0.0.0:8080", builder)?
+        // .bind_openssl("0.0.0.0:8080", builder)?
+        .bind(("127.0.0.1", 8080))?
         .run()
         .await
 
