@@ -1,17 +1,15 @@
 use std::sync::Arc;
 use actix_web::{get, post, App, HttpServer, Responder, HttpResponse, web};
 use serde::{Serialize, Deserialize};
-use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use actix_files::Files;
-use rayon::prelude::*;
 use deltalake::{*, arrow::array::{Float64Array, StringArray}};
 use datafusion::prelude::SessionContext;
 use chrono::Utc;
 
 async fn get_timestamp_from_hours(hours: i64) -> i64 {
     let datetime = Utc::now() - chrono::Duration::hours(hours);
-    let timestamp = datetime.timestamp();
-    timestamp
+    
+    datetime.timestamp()
 }
 
 async fn delta_data(hours: i64) -> (Vec<String>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>) {
@@ -19,12 +17,12 @@ async fn delta_data(hours: i64) -> (Vec<String>, Vec<f64>, Vec<f64>, Vec<f64>, V
     let timestamp = get_timestamp_from_hours(hours).await;
 
     let ctx = SessionContext::new();
-    let table = deltalake::open_table("/home/sidefxs/solar_wind/".to_string())
+    let table = deltalake::open_table("/Users/jayaro/Repos/swpc_delta/solar_wind".to_string())
         .await
         .unwrap();
     ctx.register_table("solar_wind", Arc::new(table)).unwrap();
 
-    let sql = format!("SELECT * FROM solar_wind WHERE timestamp > '{}%'", timestamp);
+    let sql = format!("SELECT * FROM solar_wind WHERE timestamp > '{timestamp}%'");
   
     let batches = ctx
         .sql(&sql).await.unwrap()
@@ -32,40 +30,45 @@ async fn delta_data(hours: i64) -> (Vec<String>, Vec<f64>, Vec<f64>, Vec<f64>, V
         .await.unwrap();
 
     let time_tag_vec = batches
-        .par_iter()
-        .map(|x| x.column(1).as_any().downcast_ref::<StringArray>().unwrap().iter().map(|x| x.unwrap().to_string())
-        .collect::<Vec<String>>())
-        .flatten()
+        .iter()
+        .flat_map(|x| x.column(1).as_any().downcast_ref::<StringArray>()
+            .map(|arr| arr.iter().filter_map(|x| x.map(|s| s.to_string())).collect::<Vec<String>>())
+            .unwrap_or_default())
         .collect::<Vec<String>>();
 
     let speed_vec = batches
-        .par_iter()
-        .map(|x| x.column(2).as_any().downcast_ref::<Float64Array>().unwrap().values().to_vec())
-        .flatten()
+        .iter()
+        .flat_map(|x| x.column(2).as_any().downcast_ref::<Float64Array>()
+            .map(|arr| arr.values().to_vec())
+            .unwrap_or_default())
         .collect::<Vec<f64>>();
 
     let density_vec = batches
-        .par_iter()
-        .map(|x| x.column(3).as_any().downcast_ref::<Float64Array>().unwrap().values().to_vec())
-        .flatten()
+        .iter()
+        .flat_map(|x| x.column(3).as_any().downcast_ref::<Float64Array>()
+            .map(|arr| arr.values().to_vec())
+            .unwrap_or_default())
         .collect::<Vec<f64>>();
 
     let temperature_vec = batches
-        .par_iter()
-        .map(|x| x.column(4).as_any().downcast_ref::<Float64Array>().unwrap().values().to_vec())
-        .flatten()
+        .iter()
+        .flat_map(|x| x.column(4).as_any().downcast_ref::<Float64Array>()
+            .map(|arr| arr.values().to_vec())
+            .unwrap_or_default())
         .collect::<Vec<f64>>();
 
     let bt_vec = batches
-        .par_iter()
-        .map(|x| x.column(5).as_any().downcast_ref::<Float64Array>().unwrap().values().to_vec())
-        .flatten()
+        .iter()
+        .flat_map(|x| x.column(5).as_any().downcast_ref::<Float64Array>()
+            .map(|arr| arr.values().to_vec())
+            .unwrap_or_default())
         .collect::<Vec<f64>>();
 
     let bz_vec = batches
-        .par_iter()
-        .map(|x| x.column(6).as_any().downcast_ref::<Float64Array>().unwrap().values().to_vec())
-        .flatten()
+        .iter()
+        .flat_map(|x| x.column(6).as_any().downcast_ref::<Float64Array>()
+            .map(|arr| arr.values().to_vec())
+            .unwrap_or_default())
         .collect::<Vec<f64>>();
 
     (time_tag_vec, bt_vec, bz_vec, density_vec, speed_vec, temperature_vec)
@@ -214,18 +217,18 @@ async fn line_plot_update_hx(hours: web::Path<i64>) -> String {
 #[get("/")]
 async fn index() -> impl Responder {
 
-    let mut builder = HttpResponse::Ok();
-    builder.content_type("text/html; charset=utf-8");
-    builder.body(include_str!("../static/index.html"))
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(include_str!("../static/index.html"))
 
 }
 
 #[get("/aurora")]
 async fn aurora_page() -> impl Responder {
 
-    let mut builder = HttpResponse::Ok();
-    builder.content_type("text/html; charset=utf-8");
-    builder.body(include_str!("../static/plot.html"))
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(include_str!("../static/plot.html"))
 
 }
 
